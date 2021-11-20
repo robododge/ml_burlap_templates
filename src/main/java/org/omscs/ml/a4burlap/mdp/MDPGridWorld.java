@@ -56,9 +56,9 @@ public class MDPGridWorld implements MDPDef {
 
     String[] rawGridMap = null;
     if (problemSize == ProblemSize.LARGE) {
-      rawGridMap = GridMaps.GRID_MAP_SMALL;
-    } else {
       rawGridMap = GridMaps.GRID_MAP_LARGE;
+    } else {
+      rawGridMap = GridMaps.GRID_MAP_SMALL;
     }
 
     int rows = rawGridMap.length;
@@ -66,6 +66,7 @@ public class MDPGridWorld implements MDPDef {
     this.matrix = new int[rows][cols];
 
     this.goals = new HashSet<Coordinates>();
+    this.hazards = new ArrayList<Hazard>();
     this.hashableStateFactory = new SimpleHashableStateFactory();
 
     invertAndProcessGrid(rawGridMap);

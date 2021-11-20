@@ -35,7 +35,7 @@ public class GridWorldVIExperiment implements RunnerVIPI {
   private int episodeCount = 0;
 
   public GridWorldVIExperiment(
-      VISettings viSettings, CSVWriterGeneric csvWriter, MDPGridWorld mdpGridWorld) {
+          MDPGridWorld mdpGridWorld, VISettings viSettings, CSVWriterGeneric csvWriter ) {
     this.viSettings = viSettings;
     this.csvWriter = csvWriter;
     this.mdpGridWorld = mdpGridWorld;

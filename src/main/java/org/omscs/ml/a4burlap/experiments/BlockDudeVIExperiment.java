@@ -65,7 +65,6 @@ public class BlockDudeVIExperiment implements RunnerVIPI {
 
     Policy policy = null;
     Episode episode = null;
-    long startTime = System.nanoTime();
 
     System.out.printf("Starting VI for Blockdude: \n");
     policy = viPlanner.planFromState(initialBdState);

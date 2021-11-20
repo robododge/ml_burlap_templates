@@ -1,6 +1,8 @@
 package org.omscs.ml.a4burlap.qlearn;
 
-public class QSettings {
+import org.omscs.ml.a4burlap.utils.ExperimentSettingsTracking;
+
+public class QSettings implements ExperimentSettingsTracking {
 
   // omain, 0.99, hashingFactory, 0.3, 0.1, 1000);
   //        agent.setLearningPolicy( new EpsilonGreedy(agent, 0.1 ));
@@ -50,5 +52,11 @@ public class QSettings {
 
     public String getShortName() {
         return shortName;
+    }
+
+    @Override
+    public String experimentSettingsToLog() {
+        return String.format("Name: **%s** gamma:%.3f, qInit:%.5f, learning_rate:%.5f, maxEpisodeSize:%d, epsilon:%.5f, eDecay:%.5f",
+                this.shortName, this.gamma, this.qInit, this.learningRate, this.maxEpisodeSize, this.epsilon, this.epsilonDecay);
     }
 }

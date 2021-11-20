@@ -1,6 +1,7 @@
 
 #output dir used during generation
-output
+output/
+manual_output/
 
 
 # Below was Created by https://www.toptal.com/developers/gitignore/api/intellij+all,java,groovy

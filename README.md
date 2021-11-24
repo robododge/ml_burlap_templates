@@ -1,4 +1,4 @@
-#OMSCS ML CS7641 Burlap Templates
+# OMSCS ML CS7641 Burlap Templates
 
 ## Setup and run
 * This project uses java and gradle. Make sure you have a recent version of Java JDK installed (recommend JDK 15 or higher)
@@ -14,12 +14,14 @@
 ## Create and run your experiments.
 A sample experiment has been provided in [RunExperiments.java](https://github.com/robododge/omscs_ml_a4_burlap/blob/main/src/main/java/org/omscs/ml/a4burlap/experiments/RunExperiments.java)
 Edit this file to setup various experiment sizes, current examples:
+
 1. Setup Large & Small GridWorldExperiments
 2. Setup the Level1 & Level2 BlockDude experiments
 
-Also, setup experiment MDP solver and learner alogorithms
-3. Value Iteraion Experiments  (use the VISettings class to set hyperparametrs)
-4. Policy Iteration Experiments (use the PISettings class to set hyperparametrs)
+Also, three MDP solver alogorithms are provided:
+
+1. Value Iteraion Experiments  (use the VISettings class to set hyperparametrs)
+3. Policy Iteration Experiments (use the PISettings class to set hyperparametrs)
 5. Q-Learning Experimnets (use the QSettings class to set hyperparametrs)
 
 For running your experiments, you can just execute the main() of the RunExperiments.java class from your IDE.

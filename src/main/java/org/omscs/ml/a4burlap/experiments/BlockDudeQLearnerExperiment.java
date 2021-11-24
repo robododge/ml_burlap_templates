@@ -26,7 +26,11 @@ import org.omscs.ml.a4burlap.qlearn.QSettings;
 import org.omscs.ml.a4burlap.utils.CSVWriterGeneric;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
+
+import static org.omscs.ml.a4burlap.utils.Utils.diffTimesNano;
+import static org.omscs.ml.a4burlap.utils.Utils.markStartTimeNano;
 
 public class BlockDudeQLearnerExperiment implements RunnerQ, LearningAgentFactory {
 
@@ -61,26 +65,39 @@ public class BlockDudeQLearnerExperiment implements RunnerQ, LearningAgentFactor
   @Override
   public void runWithEpisodesAndSave(int trials, int episodes) {
 
-//    LearningAlgorithmExperimenter experimenter =
-//        new LearningAlgorithmExperimenter(this.simEnv, trials, episodes, this);
-//
-//
-//    experimenter.toggleVisualPlots(false);
-//    experimenter.toggleTrialLengthInterpretation(false);
-//    experimenter.startExperiment();
-//
-//    String baseResutlPath = csvWriter.getFullBasePath().toString();
-//
-//    Path experimentPath = Path.of(baseResutlPath, NAME_BLOCKDUDE, this.qSettings.getShortName());
-//    experimenter.writeEpisodeDataToCSV(experimentPath.toString());
+    if (trials < 0) trials = 1;
+
+    for (int i = 0; i < trials; i++) {
+      System.out.printf("** QLearning trail-%d \n", i);
+      runWithEposodes(i, episodes);
+    }
+  }
+
+  public void runWithEposodes(int trialNumber, int episodes) {
+
+    String usableFileName =
+            String.format("%s-%02d", this.qSettings.getShortName(), trialNumber);
+
+    csvWriter.writeHeader(
+            Arrays.asList(new String[] {"iter", "numSteps", "wallclock"}), NAME_BLOCKDUDE, usableFileName);
 
     QLearning agent = makeAgent();
 
+    long startTime, wallClockNano;
+    Episode episodeAt = null;
 
     for (int i = 0; i < episodes; i++) {
-      agent.runLearningEpisode(this.simEnv, qSettings.getMaxEpisodeSize());
-      if(i < 10 || i > episodes -10 )
-        System.out.printf("episode: %d, numSteps %d\n", i, agent.getLastNumSteps());
+      startTime = markStartTimeNano();
+      episodeAt = agent.runLearningEpisode(this.simEnv, qSettings.getMaxEpisodeSize());
+      wallClockNano =diffTimesNano(startTime);
+
+//      if(i < 10 || i > episodes -10 )
+//        System.out.printf("episode: %d, numSteps %d\n", i, agent.getLastNumSteps());
+
+      csvWriter.writeRow(Arrays.asList(
+              new String[] {
+                      Integer.toString(i), Integer.toString(agent.getLastNumSteps()), Long.toString(wallClockNano)
+              }));
       this.simEnv.resetEnvironment();
     }
 

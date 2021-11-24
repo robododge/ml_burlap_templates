@@ -47,6 +47,10 @@ public class MDPGridWorld implements MDPDef {
     this(DEFAULT_ALL_REWARD, DEFAULT_GOAL_REWARD, DEFAULT_TRANS_PROB, makeDefaultHazardMap(), problemSize);
   }
 
+  public MDPGridWorld(double transitionProbability, ProblemSize problemSize) {
+    this(DEFAULT_ALL_REWARD, DEFAULT_GOAL_REWARD, transitionProbability, makeDefaultHazardMap(), problemSize);
+  }
+
   public MDPGridWorld(double defaultReward, double goalReward, double transitionProb, HashMap<Hazard.HazardType, Double> hazardRewards, ProblemSize problemSize) {
     this.defaultReward = defaultReward;
     this.goalReward = goalReward;
@@ -61,9 +65,10 @@ public class MDPGridWorld implements MDPDef {
       rawGridMap = GridMaps.GRID_MAP_SMALL;
     }
 
-    int rows = rawGridMap.length;
-    int cols = rawGridMap[0].toCharArray().length;
-    this.matrix = new int[rows][cols];
+    int ys = rawGridMap.length;
+    int xs = rawGridMap[0].toCharArray().length;
+    this.matrix = new int[xs][ys];
+    System.out.printf("Init Grid Matrix [%d x %d]\n",xs,ys);
 
     this.goals = new HashSet<Coordinates>();
     this.hazards = new ArrayList<Hazard>();
@@ -143,7 +148,7 @@ public class MDPGridWorld implements MDPDef {
 
   private void invertAndProcessGrid(String[] gridMap) {
     for (int i = 0; i < gridMap.length; i++) {
-      for (int j = 0; j < gridMap[i].length(); j++) {
+      for (int j = 0; j < getWidth(); j++) {
         int x = j;
         int y = getWidth() - 1 - i;
 
@@ -180,5 +185,9 @@ public class MDPGridWorld implements MDPDef {
         }
       }
     }
+  }
+
+  public Set<Coordinates> getGoals() {
+    return goals;
   }
 }

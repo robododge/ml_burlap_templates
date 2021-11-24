@@ -71,6 +71,7 @@ public class GridWorldPIExperiment implements RunnerVIPI {
     List<Action> actionSeq = episode.actionSequence;
     System.out.println(actionSeq);
 
+
     // writing of the metrics to file
     List<PIVIDeltaMetric> metrics = ((DeltaCapable) piPlanner).getDeltaMetrics();
     System.out.printf("Writing %d results to csv now for GridWorldPI experiment", metrics.size());
@@ -104,6 +105,9 @@ public class GridWorldPIExperiment implements RunnerVIPI {
 
     Path episodePath = Path.of(baseResutlPath, NAME_GRIDWORLD, usableFileName);
     writeVIPIEpisodeData(eWrapper, episodePath.toString());
+
+    System.out.printf(
+            "Optimal Policy \n- total steps %d\n- total reward %.5f\n", episode.actionSequence.size(), eWrapper.totalReward);
 
     if (visualize) {
       runWithGui((ValueFunction) piPlanner, initialGWState, gwDomain, policy, hashingFactory);

@@ -12,6 +12,8 @@ public class EpisodeWrapper {
   private final long totalWallClock;
   private final long totalValueIterations;
 
+  public double totalReward;
+
   public EpisodeWrapper(Episode episode, long totalWallClock, long totalValueIterations) {
     this.episode = episode;
     this.totalWallClock = totalWallClock;
@@ -21,7 +23,6 @@ public class EpisodeWrapper {
   public String getEpisodeSummary() {
 
     List<Double> rewardSequence = this.episode.rewardSequence;
-    Double totalReward = 0d;
 
     for (Double rwrd : rewardSequence) {
       totalReward += rwrd;
@@ -29,11 +30,12 @@ public class EpisodeWrapper {
 
     int totalSteps = this.episode.numTimeSteps();
     String fmtString =
-        "Total steps: %d\nTotal WallClock (MS): %d\nTotal VI Iterations: %d\nAverage Reward:%.3f\nReward Sequence: %s\nAction Sequence: %s";
+        "Total steps: %d\nTotal actions steps: %d\nTotal WallClock (MS): %d\nTotal VI Iterations: %d\nAverage Reward:%.3f\nReward Sequence: %s\nAction Sequence: %s";
     String outString =
         String.format(
             fmtString,
             totalSteps,
+            this.episode.actionSequence.size(),
             this.totalWallClock,
             this.totalValueIterations,
             totalReward / this.episode.rewardSequence.size(),

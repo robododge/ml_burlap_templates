@@ -66,7 +66,8 @@ public class GridWorldVIExperiment implements RunnerVIPI {
         PolicyUtils.rollout(policy, initialGWState, gwDomain.getModel(), getMaxRolloutIterations());
     System.out.printf("Done episode:\n");
     List<Action> actionSeq = episode.actionSequence;
-    System.out.println(actionSeq);
+
+    System.out.println(actionSeq);//System.out.println(episode.stateSequence);
 
     // writing of the metrics to file
     List<PIVIDeltaMetric> metrics = ((DeltaCapable) viPlanner).getDeltaMetrics();
@@ -95,6 +96,8 @@ public class GridWorldVIExperiment implements RunnerVIPI {
 
     Path episodePath = Path.of(baseResutlPath, NAME_GRIDWORLD, usableFileName);
     writeVIPIEpisodeData(eWrapper, episodePath.toString());
+    System.out.printf(
+            "Optimal Policy \n- total steps %d\n- total reward %.5f\n", episode.actionSequence.size(), eWrapper.totalReward);
 
     if (visualize) {
       runWithGui((ValueFunction) viPlanner, initialGWState, gwDomain, policy, hashingFactory);

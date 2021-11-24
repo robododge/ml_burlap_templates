@@ -26,11 +26,17 @@ public class CSVWriterGeneric {
     private CsvWriter csvWriter;
     //    private Path csvDirPath;
     private String metadata;
+    private String catalogPrefix;
 
     public CSVWriterGeneric(String rootPath, Set<String> intermediatePaths, String metadata) {
+      this(rootPath,intermediatePaths,metadata,null);
+    }
+
+    public CSVWriterGeneric(String rootPath, Set<String> intermediatePaths, String metadata, String catalogPrefix) {
         this.rootPath = rootPath;
         this.intermediatePaths = intermediatePaths;
         this.metadata = metadata;
+        this.catalogPrefix = catalogPrefix;
         ensurePaths();
     }
 
@@ -41,7 +47,9 @@ public class CSVWriterGeneric {
     private void ensurePaths() {
 
         this.uniqueD = Utils.uniqueDirName();
-        this.fullBasePath = Path.of(this.rootPath, this.uniqueD);
+        String prefix = (this.catalogPrefix != null)?this.catalogPrefix+"-" :"";
+        String mergedRootName = String.format("%s%s",prefix,this.uniqueD );
+        this.fullBasePath = Path.of(this.rootPath, mergedRootName);
         File rootDir = fullBasePath.toFile();
         boolean created = rootDir.mkdirs();
         if (!created)
@@ -124,7 +132,9 @@ public class CSVWriterGeneric {
     }
 
     private File getMetaFile() {
-        File metaFile = new File(this.rootPath, this.uniqueD + "_meta.txt");
+        String prefix = (this.catalogPrefix != null)?this.catalogPrefix+"-" :"";
+        String mergedName = String.format("%s%s_meta.txt",prefix,this.uniqueD );
+        File metaFile = new File(this.rootPath, mergedName);
         return metaFile;
     }
 

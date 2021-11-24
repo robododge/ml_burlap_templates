@@ -10,6 +10,10 @@ import burlap.statehashing.HashableStateFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.omscs.ml.a4burlap.utils.Utils.diffTimesNano;
+import static org.omscs.ml.a4burlap.utils.Utils.markStartTimeNano;
+import static org.omscs.ml.a4burlap.utils.Utils.nanoToMilli;
+
 public class DeltaVariantPolicyIteration extends PolicyIteration implements DeltaCapable {
 
     List<PIVIDeltaMetric> deltaMetrics;
@@ -62,18 +66,6 @@ public class DeltaVariantPolicyIteration extends PolicyIteration implements Delt
 
     public List<PIVIDeltaMetric> getDeltaMetrics() {
         return deltaMetrics;
-    }
-
-    public static long markStartTimeNano() {
-        return System.nanoTime();
-    }
-
-    public static long diffTimesNano(long start) {
-        return System.nanoTime() - start;
-    }
-
-    public static long nanoToMilli (long nanoTime) {
-        return (long) nanoTime / 1000000;
     }
 
 }

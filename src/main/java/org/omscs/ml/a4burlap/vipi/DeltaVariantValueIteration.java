@@ -6,13 +6,14 @@ import burlap.mdp.singleagent.SADomain;
 import burlap.statehashing.HashableState;
 import burlap.statehashing.HashableStateFactory;
 
-import static org.omscs.ml.a4burlap.vipi.DeltaVariantPolicyIteration.diffTimesNano;
-import static org.omscs.ml.a4burlap.vipi.DeltaVariantPolicyIteration.nanoToMilli;
-import static org.omscs.ml.a4burlap.vipi.DeltaVariantPolicyIteration.markStartTimeNano;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import static org.omscs.ml.a4burlap.utils.Utils.diffTimesNano;
+import static org.omscs.ml.a4burlap.utils.Utils.markStartTimeNano;
+import static org.omscs.ml.a4burlap.utils.Utils.nanoToMilli;
+
 
 public class DeltaVariantValueIteration extends ValueIteration implements DeltaCapable{
 

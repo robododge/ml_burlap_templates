@@ -25,12 +25,16 @@ import org.omscs.ml.a4burlap.qlearn.EGreedyDecayPolicy;
 import org.omscs.ml.a4burlap.qlearn.QLearnerWithMetrics;
 import org.omscs.ml.a4burlap.qlearn.QSettings;
 import org.omscs.ml.a4burlap.utils.CSVWriterGeneric;
+import org.omscs.ml.a4burlap.utils.EpisodeWrapper;
 
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.omscs.ml.a4burlap.utils.EpisodeHelper.sumupTotalRewards;
+import static org.omscs.ml.a4burlap.utils.EpisodeWrapper.writeQEpisodeData;
 import static org.omscs.ml.a4burlap.utils.Utils.diffTimesNano;
 import static org.omscs.ml.a4burlap.utils.Utils.markStartTimeNano;
 import static org.omscs.ml.a4burlap.utils.Utils.nanoToMilli;
@@ -69,7 +73,6 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
     this.currTotalReward = getHeightByWith() * -3;
   }
 
-
   private QLearning makeAgent() {
 
     QLearning agent =
@@ -99,12 +102,13 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
 
   public void runWithEposodes(int trialNumber, int episodes) {
 
-    String usableFileName =
-            String.format("%s-%02d", this.qSettings.getShortName(), trialNumber);
+    String usableFileName = String.format("%s-%02d", this.qSettings.getShortName(), trialNumber);
 
     csvWriter.writeHeader(
-            Arrays.asList(new String[] {"iter", "numSteps", "wallclock"}), NAME_GRIDWORLD, usableFileName);
-    long startTime, wallClockNano;
+        Arrays.asList(new String[] {"iter", "rewards", "numSteps", "wallclock"}),
+        NAME_GRIDWORLD,
+        usableFileName);
+    long startTime, wallClockNano, totalWallClock = 0L;
 
     QLearning agent = makeAgent();
 
@@ -113,34 +117,30 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
 
       startTime = markStartTimeNano();
       episodeAt = agent.runLearningEpisode(this.simEnv, -1);
-      wallClockNano =diffTimesNano(startTime);
-      csvWriter.writeRow(Arrays.asList(
-              new String[] {
-                      Integer.toString(i), Integer.toString(agent.getLastNumSteps()), Long.toString(wallClockNano)
-              }));
+      wallClockNano = diffTimesNano(startTime);
+      totalWallClock += wallClockNano;
+      csvWriter.writeRow(
+          Arrays.asList(
+                  Integer.toString(i),  Double.toString(sumupTotalRewards(episodeAt)),
+                  Integer.toString(agent.getLastNumSteps()),
+                  Long.toString(wallClockNano)));
 
       //      if (i < 10 || i > episodes - 10)
       //        System.out.printf("episode: %d, numSteps %d\n", i, agent.getLastNumSteps());
       this.simEnv.resetEnvironment();
 
-      if (i == episodes -1 ) {
+      if (i == episodes - 1) {
         if (visitedFound(episodeAt)) {
-          System.out.printf(
-              "Visted Goal!! episode: %d\n", i);
-          }
-        else {
+          System.out.printf("Visted Goal!! episode: %d\n", i);
+        } else {
           System.out.printf("NOT Visited Goal!! by episode: %d\n", i);
         }
-
       }
-
     }
 
-
-    //Take the very last policy after iterations
+    // Take the very last policy after iterations
     Policy policy = new GreedyQPolicy(agent);
     Episode episode = null;
-
 
     System.out.printf(
         "Running Q learning on GridWorld size wxh %d x %d\n",
@@ -150,18 +150,16 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
     System.out.printf("Done episode:\n");
     List<Action> actionSeq = episode.actionSequence;
     int tstepTotal = episode.numTimeSteps();
-    Double totalReward = 0d;
-
-    for (Double rwrd : episode.rewardSequence) {
-      totalReward += rwrd;
-    }
+    Double totalReward = sumupTotalRewards(episode);
 
     System.out.printf(
         "Optimal Policy \n- total steps %d\n- total reward %.5f\n", tstepTotal, totalReward);
-//    System.out.printf(
-//        "Best Q results \n- minmal steps %d\n- best reward %.5f\n",
-//        this.minStepsFound, this.currTotalReward);
+    //    System.out.printf(
+    //        "Best Q results \n- minmal steps %d\n- best reward %.5f\n",
+    //        this.minStepsFound, this.currTotalReward);
     System.out.println(episode.actionSequence);
+
+    writeQEpisodeResult(episode, nanoToMilli(totalWallClock), usableFileName);
 
     if (runVisuals) {
       List<State> states =
@@ -217,6 +215,7 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
 
   /**
    * Make a determination if the gridworld goal has been visited yet
+   *
    * @param episodeAt
    * @return
    */
@@ -236,20 +235,19 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
     }
 
     boolean foundGoal =
-            states.stream()
-                    .anyMatch(
-                            state -> {
-                              GridWorldState gwsIn = (GridWorldState) state;
-                              for (GridWorldState gws : goalStates) {
-                                if (gws.agent.x == gwsIn.agent.x && gws.agent.y == gwsIn.agent.y) {
-                                  return true;
-                                }
-                              }
-                              return false;
-                            });
+        states.stream()
+            .anyMatch(
+                state -> {
+                  GridWorldState gwsIn = (GridWorldState) state;
+                  for (GridWorldState gws : goalStates) {
+                    if (gws.agent.x == gwsIn.agent.x && gws.agent.y == gwsIn.agent.y) {
+                      return true;
+                    }
+                  }
+                  return false;
+                });
     return foundGoal;
   }
-
 
   @Override
   public String getAgentName() {
@@ -268,5 +266,14 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
   @Override
   public void tooggleVisual(boolean visualOn) {
     this.runVisuals = visualOn;
+  }
+
+  private void writeQEpisodeResult(
+      Episode episode, Long totalWallClockMilli, String usableFileName) {
+    EpisodeWrapper eWrapper = new EpisodeWrapper(episode, totalWallClockMilli);
+    String baseResutlPath = csvWriter.getFullBasePath().toString();
+
+    Path episodePath = Path.of(baseResutlPath, NAME_GRIDWORLD, usableFileName);
+    writeQEpisodeData(eWrapper, episodePath.toString());
   }
 }

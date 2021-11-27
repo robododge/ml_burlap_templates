@@ -22,6 +22,7 @@ import burlap.mdp.singleagent.oo.OOSADomain;
 import burlap.statehashing.HashableStateFactory;
 import burlap.statehashing.simple.SimpleHashableStateFactory;
 
+import static burlap.domain.singleagent.blockdude.BlockDudeLevelConstructor.addFloor;
 import static org.omscs.ml.a4burlap.mdp.ProblemSize.LARGE;
 import static org.omscs.ml.a4burlap.mdp.ProblemSize.SMALL;
 
@@ -80,6 +81,7 @@ public class MDPBlockDude implements MDPDef{
         switch (this.problemSize) {
             case LARGE:
                 initialBdState = (BlockDudeState) BlockDudeLevelConstructor.getLevel2(this.bdDomain);
+                initialBdState = getLevelCustom(this.bdDomain);
                 break;
             default:
                 initialBdState = (BlockDudeState) BlockDudeLevelConstructor.getLevel1(this.bdDomain);
@@ -199,5 +201,34 @@ public class MDPBlockDude implements MDPDef{
         }
     }
 
+    public static BlockDudeState getLevelCustom(Domain domain){
+
+        int [][] map = new int[25][25];
+        addFloor(map);
+
+        map[3][1] = 1;
+        map[3][2] = 1;
+
+        map[7][1] = 1;
+
+        map[11][1] = 1;
+        map[11][2] = 1;
+        map[11][3] = 1;
+
+//        map[15][1] = 1;
+//        map[15][2] = 1;
+
+        BlockDudeState s = new BlockDudeState(
+                new BlockDudeAgent(22, 1, 1, false),
+                new BlockDudeMap(map),
+                BlockDudeCell.exit(0, 1),
+                BlockDudeCell.block("b0", 9, 1),
+                BlockDudeCell.block("b1", 13, 1),
+                BlockDudeCell.block("b2", 15, 1),
+                BlockDudeCell.block("b3", 17, 1)
+        );
+
+        return s;
+    }
 
 }

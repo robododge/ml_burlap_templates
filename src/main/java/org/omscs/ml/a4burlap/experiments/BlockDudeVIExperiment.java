@@ -37,6 +37,14 @@ public class BlockDudeVIExperiment implements RunnerVIPI {
     this.csvWriter = csvWriter;
   }
 
+  @Override
+  public void runAndSaveMulti( int episodes) {
+    for (int i = 0; i < episodes; i++) {
+      runAndSave(false);
+      incrementEpisode();
+    }
+  }
+
   /**
    * Used for rolling out the policy, if the policy is poor, such that an agent will be stuck
    * continually hitting a wall, this max iteraion will be safeguard to avoid policy roll out to get

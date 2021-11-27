@@ -41,6 +41,13 @@ public class GridWorldPIExperiment implements RunnerVIPI {
     this.csvWriter = csvWriter;
     this.mdpGridWorld = mdpGridWorld;
   }
+  @Override
+  public void runAndSaveMulti( int episodes) {
+    for (int i = 0; i < episodes; i++) {
+      runAndSave(false);
+      incrementEpisode();
+    }
+  }
 
   @Override
   public void runAndSave(boolean visualize) {
@@ -62,7 +69,7 @@ public class GridWorldPIExperiment implements RunnerVIPI {
     Policy policy = null;
     Episode episode = null;
 
-    System.out.printf("Starting PI for GridWorld: \n");
+    System.out.printf("Starting PI for GridWorld Episode: **%d**\n",this.episodeCount);
     policy = piPlanner.planFromState(initialGWState);
 
     episode =

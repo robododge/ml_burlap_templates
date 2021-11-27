@@ -2,6 +2,7 @@
 #output dir used during generation
 output/
 manual_output/
+keep/
 
 
 # Below was Created by https://www.toptal.com/developers/gitignore/api/intellij+all,java,groovy

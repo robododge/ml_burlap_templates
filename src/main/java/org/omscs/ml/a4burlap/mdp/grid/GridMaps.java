@@ -24,7 +24,7 @@ public class GridMaps {
                     "1110111",
                     "00000SG",
             };
-    public static String[] GRID_MAP_SMALL_MAIN =
+    public static String[] GRID_MAP_SMALL_DEMO =
     new String[] {
             "X0011110",
             "11000S10",
@@ -48,7 +48,7 @@ public class GridMaps {
                     "000G00SG",
             };
 
-    public static String[] GRID_MAP_LARGE_ORG =  new String[] {
+    public static String[] GRID_MAP_LARGE_DEMO =  new String[] {
                 "111111111111111111111",
                 "X00010001000100000101",
                 "101110101L1010S110101",

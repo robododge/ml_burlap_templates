@@ -31,3 +31,10 @@ task<JavaExec>("demoExperiment") {
     classpath(sourceSets["main"].runtimeClasspath)
     main = "org.omscs.ml.a4burlap.experiments.RunExperiments"
 }
+
+task<JavaExec>("blockDudeViewer") {
+    group = "myRunners"
+    classpath(configurations.runtimeClasspath)
+    classpath(sourceSets["main"].runtimeClasspath)
+    getMainClass().set("org.omscs.ml.a4burlap.mdp.BlockDudeViewer")
+}

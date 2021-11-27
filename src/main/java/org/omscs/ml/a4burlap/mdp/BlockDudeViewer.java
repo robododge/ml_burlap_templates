@@ -15,10 +15,8 @@ public class BlockDudeViewer {
         SADomain domain = (SADomain) ebd.generateDomain();
 
 
-//        State s = BlockDudeLevelConstructor.getLevel1(domain);
-        State s = MDPBlockDude.getLevelCustom(domain);
-
-
+        State s = BlockDudeLevelConstructor.getLevel1(domain);
+//        State s = MDPBlockDude.getLevelCustom(domain);
 
         Visualizer v = BlockDudeVisualizer.getVisualizer(ebd.getMaxx(), ebd.getMaxx());
 

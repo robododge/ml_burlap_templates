@@ -1,11 +1,23 @@
 # OMSCS ML CS7641 Burlap Templates
 
+Implementes templates to use the Java-based Reienforcement Learning alogrithm's provied in the [BURLAP libaray](https://github.com/jmacglashan/burlap) from  Brown University.
+
 ## Setup and run
 * This project uses java and gradle. Make sure you have a recent version of Java JDK installed (recommend JDK 15 or higher)
 * Install gradle
   * Option 1: Gradle recommended [gradle.org install instrucitons](https://gradle.org/install/)
   * Option 2: use [ASDF](https://asdf-vm.com/guide/getting-started.html#_1-install-dependencies)
 * Run gradle build `./gradlew build`
+
+## Run the demos
+
+* `./gradlew helloGridWorld` Open the BURLAP GridWorld hellow world explorer, keys:
+  * A-West, D-East, W-Up, S-Down
+* `./gradlew blockDudeViewer` Run BURLAP's BlockDude, keys:
+  * a - West, d - East, w - jump up
+  * s - pickup, x - putdown
+* `./gradlew demoExperiment` Runs the complete demo experiments in [RunExperiments.java](https://github.com/robododge/omscs_ml_a4_burlap/blob/main/src/main/java/org/omscs/ml/a4burlap/experiments/RunExperiments.java)
+
 
 ## Import into you IDE
 * Intellij - import new gradle project, select the root directory of this project

@@ -17,10 +17,17 @@ dependencies {
 }
 
 
-//TODO - FIX up some javaexes
+//TODO - add more java executables
 task<JavaExec>("helloGridWorld") {
     group = "myRunners"
     classpath(configurations.runtimeClasspath)
     classpath(sourceSets["main"].runtimeClasspath)
     main = "org.omscs.ml.a4burlap.tutorial.HelloGridWorld"
+}
+
+task<JavaExec>("demoExperiment") {
+    group = "myRunners"
+    classpath(configurations.runtimeClasspath)
+    classpath(sourceSets["main"].runtimeClasspath)
+    main = "org.omscs.ml.a4burlap.experiments.RunExperiments"
 }

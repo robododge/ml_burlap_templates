@@ -49,6 +49,8 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
   private HashableStateFactory hashingFactory;
   private SimulatedEnvironment simEnv;
   private boolean runVisuals;
+  //set the episode to visualize, -1 means all
+  private int trialToVisualize = -1;
 
   private int minStepsFound;
   private double currAvgReward;
@@ -161,7 +163,7 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
 
     writeQEpisodeResult(episode, nanoToMilli(totalWallClock), usableFileName);
 
-    if (runVisuals) {
+    if (runVisuals && (trialToVisualize == trialNumber || trialToVisualize == -1 )) {
       List<State> states =
           StateReachability.getReachableStates(
               this.mdpGridWorld.getInitialState(), domain, hashingFactory);
@@ -264,7 +266,8 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
   }
 
   @Override
-  public void tooggleVisual(boolean visualOn) {
+  public void tooggleVisual(boolean visualOn, int trialToVisualize) {
+    this.trialToVisualize = trialToVisualize;
     this.runVisuals = visualOn;
   }
 

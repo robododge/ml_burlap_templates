@@ -55,11 +55,22 @@ public class RunExperiments {
         bdqlExp01.runWithEpisodesAndSave(3,300);
         mdpBlockDudeSM.reset();
 
+
+        //Small gridworld with Vi
+        printExerimentStartBlurb("VI GridWorld Small");
+        VISettings viSettingsGW02 = new VISettings(0.99f, 0.0001f,
+                1000,"vi_gw_small");
+        csvWriter.appendToExperimentCatalog(viSettingsGW02);
+        GridWorldVIExperiment gwSmVi02 = new GridWorldVIExperiment(mdpGridWorldSM,viSettingsGW02, csvWriter);
+        gwSmVi02.runAndSaveMultiWithVisual(5,0);
+        mdpGridWorldSM.reset();
+
         //Small gridworld with Q-Learner
         printExerimentStartBlurb("Q-Learner - Small Gridworld");
         QSettings qSettingsGW01 = new QSettings("q_sm_gw_01", 0.99, 0.3, 0.1, 2000, 0.8, 0.0 );
         csvWriter.appendToExperimentCatalog(qSettingsGW01);
         GridWorldQLearnerExperiment gwQExp01 = new GridWorldQLearnerExperiment(mdpGridWorldSM,qSettingsGW01, csvWriter);
+        gwQExp01.tooggleVisual(true, 0);
         gwQExp01.runWithEpisodesAndSave(3,2000);
         mdpGridWorldSM.reset();
 

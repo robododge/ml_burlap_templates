@@ -50,6 +50,16 @@ public class GridWorldVIExperiment implements RunnerVIPI {
   }
 
   @Override
+  public void runAndSaveMultiWithVisual(int episodes, int episodeToVisualize) {
+    boolean shouldVisualize = false;
+    for (int i = 0; i < episodes; i++) {
+      shouldVisualize = (episodeToVisualize == i || episodeToVisualize == -1);
+      runAndSave(shouldVisualize);
+      incrementEpisode();
+    }
+  }
+
+  @Override
   public void runAndSave(boolean visualize) {
 
     SADomain gwDomain = (SADomain) mdpGridWorld.generateDomain();
@@ -84,7 +94,7 @@ public class GridWorldVIExperiment implements RunnerVIPI {
         String.format("%s-%02d", this.viSettings.getShortName(), this.episodeCount);
 
     csvWriter.writeHeader(
-            Arrays.asList(new String[] {"iter", "delta", "wallclock"}), NAME_GRIDWORLD, usableFileName);
+            Arrays.asList("iter", "delta", "wallclock"), NAME_GRIDWORLD, usableFileName);
     long totalWallClock = 0, wallClock = 0;
     for (int i = 0; i < metrics.size(); i++) {
       PIVIDeltaMetric metric = metrics.get(i);
@@ -92,9 +102,7 @@ public class GridWorldVIExperiment implements RunnerVIPI {
       totalWallClock += wallClock;
       csvWriter.writeRow(
               Arrays.asList(
-                      new String[] {
-                              Integer.toString(i), Double.toString(metric.getDelta()), Long.toString(wallClock)
-                      }));
+                      Integer.toString(i), Double.toString(metric.getDelta()), Long.toString(wallClock)));
     }
 
 

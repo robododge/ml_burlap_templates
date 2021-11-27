@@ -14,7 +14,9 @@ import burlap.mdp.singleagent.oo.OOSADomain;
 import burlap.statehashing.HashableStateFactory;
 import burlap.statehashing.simple.SimpleHashableStateFactory;
 import org.omscs.ml.a4burlap.mdp.grid.Coordinates;
+import org.omscs.ml.a4burlap.mdp.grid.DemoGridSelector;
 import org.omscs.ml.a4burlap.mdp.grid.GridMaps;
+import org.omscs.ml.a4burlap.mdp.grid.GridSelector;
 import org.omscs.ml.a4burlap.mdp.grid.Hazard;
 
 import java.util.ArrayList;
@@ -32,6 +34,7 @@ public class MDPGridWorld implements MDPDef {
   private int[][] matrix;
   private List<Hazard> hazards;
   private HashMap<Hazard.HazardType, Double> hazardRewards;
+  private GridSelector gridSelector;
 
   private HashableStateFactory hashableStateFactory;
 
@@ -44,26 +47,28 @@ public class MDPGridWorld implements MDPDef {
   static final double DEFAULT_TRANS_PROB = 0.8d;
 
   public MDPGridWorld(ProblemSize problemSize) {
-    this(DEFAULT_ALL_REWARD, DEFAULT_GOAL_REWARD, DEFAULT_TRANS_PROB, makeDefaultHazardMap(), problemSize);
+    this(DEFAULT_ALL_REWARD, DEFAULT_GOAL_REWARD, DEFAULT_TRANS_PROB, makeDefaultHazardMap(), problemSize,null);
   }
 
   public MDPGridWorld(double transitionProbability, ProblemSize problemSize) {
-    this(DEFAULT_ALL_REWARD, DEFAULT_GOAL_REWARD, transitionProbability, makeDefaultHazardMap(), problemSize);
+    this(DEFAULT_ALL_REWARD, DEFAULT_GOAL_REWARD, transitionProbability, makeDefaultHazardMap(), problemSize,null);
   }
 
-  public MDPGridWorld(double defaultReward, double goalReward, double transitionProb, HashMap<Hazard.HazardType, Double> hazardRewards, ProblemSize problemSize) {
+  public MDPGridWorld(double transitionProbability, ProblemSize problemSize, GridSelector gridSelector) {
+    this(DEFAULT_ALL_REWARD, DEFAULT_GOAL_REWARD, transitionProbability, makeDefaultHazardMap(), problemSize,gridSelector);
+  }
+
+  public MDPGridWorld(double defaultReward, double goalReward, double transitionProb, HashMap<Hazard.HazardType, Double> hazardRewards, ProblemSize problemSize, GridSelector gridSelector) {
     this.defaultReward = defaultReward;
     this.goalReward = goalReward;
     this.hazardRewards = hazardRewards;
     this.problemSize = problemSize;
     this.transitionProbability = transitionProb;
 
-    String[] rawGridMap = null;
-    if (problemSize == ProblemSize.LARGE) {
-      rawGridMap = GridMaps.GRID_MAP_LARGE;
-    } else {
-      rawGridMap = GridMaps.GRID_MAP_SMALL;
+    if (this.gridSelector == null) {
+      this.gridSelector = new DemoGridSelector();
     }
+    String[] rawGridMap = this.gridSelector.selectRawGrid(problemSize);
 
     int ys = rawGridMap.length;
     int xs = rawGridMap[0].toCharArray().length;

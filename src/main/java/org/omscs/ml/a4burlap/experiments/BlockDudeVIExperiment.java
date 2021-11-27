@@ -45,6 +45,12 @@ public class BlockDudeVIExperiment implements RunnerVIPI {
     }
   }
 
+  @Override
+  public void runAndSaveMultiWithVisual(int episodes, int episodeToVisualize) {
+    //Not implemented for block dude YET
+    runAndSaveMulti(episodes);
+  }
+
   /**
    * Used for rolling out the policy, if the policy is poor, such that an agent will be stuck
    * continually hitting a wall, this max iteraion will be safeguard to avoid policy roll out to get
@@ -91,7 +97,7 @@ public class BlockDudeVIExperiment implements RunnerVIPI {
         String.format("%s-%02d", this.viSettings.getShortName(), this.episodeCount);
 
     csvWriter.writeHeader(
-        Arrays.asList(new String[] {"iter", "delta", "wallclock"}), NAME_BLOCKDUDE, usableFileName);
+        Arrays.asList("iter", "delta", "wallclock"), NAME_BLOCKDUDE, usableFileName);
     long totalWallClock = 0, wallClock = 0;
     for (int i = 0; i < metrics.size(); i++) {
       PIVIDeltaMetric metric = metrics.get(i);
@@ -99,9 +105,7 @@ public class BlockDudeVIExperiment implements RunnerVIPI {
       totalWallClock += wallClock;
       csvWriter.writeRow(
           Arrays.asList(
-              new String[] {
-                Integer.toString(i), Double.toString(metric.getDelta()), Long.toString(wallClock)
-              }));
+                  Integer.toString(i), Double.toString(metric.getDelta()), Long.toString(wallClock)));
     }
 
     EpisodeWrapper eWrapper = new EpisodeWrapper(episode, totalWallClock, metrics.size());

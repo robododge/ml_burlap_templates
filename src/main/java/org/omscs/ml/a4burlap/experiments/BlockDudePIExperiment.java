@@ -44,6 +44,12 @@ public class BlockDudePIExperiment implements RunnerVIPI {
       incrementEpisode();
     }
   }
+  @Override
+  public void runAndSaveMultiWithVisual(int episodes, int episodeToVisualize) {
+    //Not implemented for block dude YET
+    runAndSaveMulti(episodes);
+  }
+
 
   @Override
   public void runAndSave(boolean visualize) {

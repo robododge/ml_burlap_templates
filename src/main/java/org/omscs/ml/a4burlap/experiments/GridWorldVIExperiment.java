@@ -42,6 +42,14 @@ public class GridWorldVIExperiment implements RunnerVIPI {
   }
 
   @Override
+  public void runAndSaveMulti( int episodes) {
+    for (int i = 0; i < episodes; i++) {
+      runAndSave(false);
+      incrementEpisode();
+    }
+  }
+
+  @Override
   public void runAndSave(boolean visualize) {
 
     SADomain gwDomain = (SADomain) mdpGridWorld.generateDomain();

@@ -68,7 +68,7 @@ public class MDPGridWorld implements MDPDef {
     int ys = rawGridMap.length;
     int xs = rawGridMap[0].toCharArray().length;
     this.matrix = new int[xs][ys];
-    System.out.printf("Init Grid Matrix [%d x %d]\n",xs,ys);
+    System.out.printf("Init Grid Matrix x by y [%d x %d]\n",xs,ys);
 
     this.goals = new HashSet<Coordinates>();
     this.hazards = new ArrayList<Hazard>();

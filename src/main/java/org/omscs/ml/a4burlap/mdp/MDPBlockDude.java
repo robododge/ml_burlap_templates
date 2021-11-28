@@ -80,7 +80,7 @@ public class MDPBlockDude implements MDPDef{
         BlockDudeState initialBdState = null;
         switch (this.problemSize) {
             case LARGE:
-                initialBdState = (BlockDudeState) BlockDudeLevelConstructor.getLevel2(this.bdDomain);
+//                initialBdState = (BlockDudeState) BlockDudeLevelConstructor.getLevel2(this.bdDomain);
                 initialBdState = getLevelCustom(this.bdDomain);
                 break;
             default:

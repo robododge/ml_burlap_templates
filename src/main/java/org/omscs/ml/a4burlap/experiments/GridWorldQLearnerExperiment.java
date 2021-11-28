@@ -2,7 +2,6 @@ package org.omscs.ml.a4burlap.experiments;
 
 import burlap.behavior.policy.GreedyQPolicy;
 import burlap.behavior.policy.Policy;
-import burlap.behavior.policy.PolicyUtils;
 import burlap.behavior.singleagent.Episode;
 import burlap.behavior.singleagent.auxiliary.StateReachability;
 import burlap.behavior.singleagent.auxiliary.valuefunctionvis.ValueFunctionVisualizerGUI;
@@ -26,6 +25,7 @@ import org.omscs.ml.a4burlap.qlearn.QLearnerWithMetrics;
 import org.omscs.ml.a4burlap.qlearn.QSettings;
 import org.omscs.ml.a4burlap.utils.CSVWriterGeneric;
 import org.omscs.ml.a4burlap.utils.EpisodeWrapper;
+import org.omscs.ml.a4burlap.utils.RunResultsCsvWriterCallback;
 
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -35,6 +35,7 @@ import java.util.Set;
 
 import static org.omscs.ml.a4burlap.utils.EpisodeHelper.sumupTotalRewards;
 import static org.omscs.ml.a4burlap.utils.EpisodeWrapper.writeQEpisodeData;
+import static org.omscs.ml.a4burlap.utils.EpisodeWrapper.writeEpisodeToCSV;
 import static org.omscs.ml.a4burlap.utils.Utils.diffTimesNano;
 import static org.omscs.ml.a4burlap.utils.Utils.markStartTimeNano;
 import static org.omscs.ml.a4burlap.utils.Utils.nanoToMilli;
@@ -48,6 +49,9 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
   private SADomain domain;
   private HashableStateFactory hashingFactory;
   private SimulatedEnvironment simEnv;
+  private RunResultsCsvWriterCallback resultsCsvCallback;
+
+  private int convergedAt;
   private boolean runVisuals;
   //set the episode to visualize, -1 means all
   private int trialToVisualize = -1;
@@ -56,6 +60,8 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
   private double currAvgReward;
   private double currTotalReward;
   private int matchCount;
+
+  public static int MUST_MATCH_X_TIMES = 20;
 
   public GridWorldQLearnerExperiment(
       MDPGridWorld mdpGridWorld, QSettings qSettings, CSVWriterGeneric csvWriter) {
@@ -68,7 +74,7 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
 
     ConstantStateGenerator constantStateGenerator =
         new ConstantStateGenerator(this.mdpGridWorld.getInitialState());
-    this.simEnv = new SimulatedEnvironment(this.domain, constantStateGenerator);
+    this.simEnv = makeSimEnv();
 
     this.minStepsFound = getHeightByWith();
     this.currAvgReward = getHeightByWith() * -3;
@@ -91,6 +97,12 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
     return agent;
   }
 
+  private SimulatedEnvironment makeSimEnv() {
+    ConstantStateGenerator constantStateGenerator =
+            new ConstantStateGenerator(this.mdpGridWorld.getInitialState());
+    return new SimulatedEnvironment(this.domain, constantStateGenerator);
+  }
+
   @Override
   public void runWithEpisodesAndSave(int trials, int episodes) {
 
@@ -104,10 +116,11 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
 
   public void runWithEposodes(int trialNumber, int episodes) {
 
+    this.convergedAt = episodes;
     String usableFileName = String.format("%s-%02d", this.qSettings.getShortName(), trialNumber);
 
     csvWriter.writeHeader(
-        Arrays.asList(new String[] {"iter", "rewards", "numSteps", "wallclock"}),
+        Arrays.asList("iter", "rewards", "numSteps", "wallclock"),
         NAME_GRIDWORLD,
         usableFileName);
     long startTime, wallClockNano, totalWallClock = 0L;
@@ -138,6 +151,12 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
           System.out.printf("NOT Visited Goal!! by episode: %d\n", i);
         }
       }
+
+      if (hasConvergedIters(episodeAt)) {
+        System.out.printf("!!-!!-!! Converged at iteration:%d !!\n ", i);
+        convergedAt = i;
+        break;
+      }
     }
 
     // Take the very last policy after iterations
@@ -147,7 +166,8 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
     System.out.printf(
         "Running Q learning on GridWorld size wxh %d x %d\n",
         this.mdpGridWorld.getWidth(), this.mdpGridWorld.getHeight());
-    episode = PolicyUtils.rollout(policy, this.simEnv, agent.getLastNumSteps() * 3);
+//    episode = PolicyUtils.rollout(policy, makeSimEnv(), agent.getLastNumSteps() * 3);
+    episode = episodeAt;
 
     System.out.printf("Done episode:\n");
     List<Action> actionSeq = episode.actionSequence;
@@ -181,6 +201,17 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
     }
   }
 
+  private boolean hasConvergedIters(Episode episodeAt) {
+    this.currTotalReward = sumupTotalRewards(episodeAt);
+
+    if (currTotalReward >= qSettings.getTargeConvergeReward()) {
+      matchCount++;
+      if (matchCount == MUST_MATCH_X_TIMES) return true;
+    } else {
+      matchCount = 0;
+    }
+    return false;
+  }
   /**
    * A failed attempt at convergence determination for q-learning
    *
@@ -274,9 +305,19 @@ public class GridWorldQLearnerExperiment implements RunnerQVis, LearningAgentFac
   private void writeQEpisodeResult(
       Episode episode, Long totalWallClockMilli, String usableFileName) {
     EpisodeWrapper eWrapper = new EpisodeWrapper(episode, totalWallClockMilli);
+    eWrapper.setqConvergedAt(this.convergedAt);
     String baseResutlPath = csvWriter.getFullBasePath().toString();
 
     Path episodePath = Path.of(baseResutlPath, NAME_GRIDWORLD, usableFileName);
     writeQEpisodeData(eWrapper, episodePath.toString());
+
+    if (this.resultsCsvCallback != null) {
+      writeEpisodeToCSV(eWrapper, csvWriter, this.resultsCsvCallback);
+    }
+  }
+
+  @Override
+  public void setRunResultsCSVCallback(RunResultsCsvWriterCallback runResultsCallback) {
+    this.resultsCsvCallback = runResultsCallback;
   }
 }

@@ -16,7 +16,8 @@ public class BlockDudeViewer {
 
 
         State s = BlockDudeLevelConstructor.getLevel1(domain);
-//        State s = MDPBlockDude.getLevelCustom(domain);
+        if (args.length == 1 && args[0].equals("c"))
+            s = MDPBlockDude.getLevelCustom(domain);
 
         Visualizer v = BlockDudeVisualizer.getVisualizer(ebd.getMaxx(), ebd.getMaxx());
 

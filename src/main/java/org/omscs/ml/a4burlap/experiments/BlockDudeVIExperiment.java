@@ -11,6 +11,7 @@ import burlap.statehashing.HashableStateFactory;
 import org.omscs.ml.a4burlap.mdp.MDPBlockDude;
 import org.omscs.ml.a4burlap.utils.CSVWriterGeneric;
 import org.omscs.ml.a4burlap.utils.EpisodeWrapper;
+import org.omscs.ml.a4burlap.utils.RunResultsCsvWriterCallback;
 import org.omscs.ml.a4burlap.vipi.DeltaCapable;
 import org.omscs.ml.a4burlap.vipi.DeltaVariantValueIteration;
 import org.omscs.ml.a4burlap.vipi.PIVIDeltaMetric;
@@ -21,12 +22,14 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.omscs.ml.a4burlap.utils.EpisodeWrapper.writeVIPIEpisodeData;
+import static org.omscs.ml.a4burlap.utils.EpisodeWrapper.writeEpisodeToCSV;
 
 public class BlockDudeVIExperiment implements RunnerVIPI {
 
   private MDPBlockDude mdpBlockDude;
   private VISettings viSettings;
   private CSVWriterGeneric csvWriter;
+  private RunResultsCsvWriterCallback resultsCsvCallback;
 
   private int episodeCount = 0;
 
@@ -105,7 +108,7 @@ public class BlockDudeVIExperiment implements RunnerVIPI {
       totalWallClock += wallClock;
       csvWriter.writeRow(
           Arrays.asList(
-                  Integer.toString(i), Double.toString(metric.getDelta()), Long.toString(wallClock)));
+                  Integer.toString(i), Double.toString(metric.getDelta()), Long.toString(wallClock)) , usableFileName);
     }
 
     EpisodeWrapper eWrapper = new EpisodeWrapper(episode, totalWallClock, metrics.size());
@@ -113,11 +116,20 @@ public class BlockDudeVIExperiment implements RunnerVIPI {
 
     Path episodePath = Path.of(baseResutlPath, NAME_BLOCKDUDE, usableFileName);
     writeVIPIEpisodeData(eWrapper, episodePath.toString());
+
+    if (this.resultsCsvCallback != null) {
+      writeEpisodeToCSV(eWrapper, csvWriter, this.resultsCsvCallback);
+    }
   }
 
 
   @Override
   public void incrementEpisode() {
     this.episodeCount++;
+  }
+
+  @Override
+  public void setRunResultsCSVCallback(RunResultsCsvWriterCallback runResultsCallback) {
+    this.resultsCsvCallback = runResultsCallback;
   }
 }

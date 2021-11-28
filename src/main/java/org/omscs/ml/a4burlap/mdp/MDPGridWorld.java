@@ -65,9 +65,8 @@ public class MDPGridWorld implements MDPDef {
     this.problemSize = problemSize;
     this.transitionProbability = transitionProb;
 
-    if (this.gridSelector == null) {
-      this.gridSelector = new DemoGridSelector();
-    }
+    this.gridSelector = (gridSelector == null) ? new DemoGridSelector(): gridSelector;
+
     String[] rawGridMap = this.gridSelector.selectRawGrid(problemSize);
 
     int ys = rawGridMap.length;

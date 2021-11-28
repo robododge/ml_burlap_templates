@@ -3,8 +3,12 @@ package org.omscs.ml.a4burlap.utils;
 import burlap.behavior.singleagent.Episode;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
+import java.util.Arrays;
 import java.util.List;
+
+import static org.omscs.ml.a4burlap.experiments.Runner.NAME_GRIDWORLD;
 
 public class EpisodeWrapper {
 
@@ -13,6 +17,7 @@ public class EpisodeWrapper {
   private final long totalValueIterations;
 
   public double totalReward;
+  private int qConvergedAt;
 
   public EpisodeWrapper(Episode episode, long totalWallClock) {
     this(episode,totalWallClock,-1);
@@ -31,6 +36,18 @@ public class EpisodeWrapper {
     for (Double rwrd : rewardSequence) {
       totalReward += rwrd;
     }
+  }
+
+  public long getTotalWallClock() {
+    return totalWallClock;
+  }
+
+  public long getTotalValueIterations() {
+    return totalValueIterations;
+  }
+
+  public double getTotalReward() {
+    return totalReward;
   }
 
   public String getVIPIEpisodeSummary() {
@@ -104,5 +121,28 @@ public class EpisodeWrapper {
     String qEpisodeString = eWrapper.getQEpisodeSummary();
     writeEpisodeStringToFile(qEpisodeString, episodeResultFilePath);
 
+  }
+
+  public static void writeEpisodeToCSV(EpisodeWrapper eWrapper, CSVWriterGeneric csvWriter, RunResultsCsvWriterCallback resultsCallback) {
+
+    String episodeResultCSVPath = resultsCallback.getFullCsvFileName(csvWriter);
+
+    File tracker = new File(episodeResultCSVPath);
+
+    System.out.println("*(*(*(*(*( Checking existance of episode file: "+tracker);
+
+    if (!tracker.exists()) {
+      System.out.println("*(*(*(*(*( Writing CSV Header for: "+tracker);
+      resultsCallback.writeHeaderOfCsv(csvWriter);
+    }
+    resultsCallback.writeRowOfCsv(csvWriter, eWrapper);
+  }
+
+  public int getqConvergedAt() {
+    return qConvergedAt;
+  }
+
+  public void setqConvergedAt(int qConvergedAt) {
+    this.qConvergedAt = qConvergedAt;
   }
 }

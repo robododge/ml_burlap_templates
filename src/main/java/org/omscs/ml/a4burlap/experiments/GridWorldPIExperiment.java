@@ -16,6 +16,7 @@ import burlap.statehashing.HashableStateFactory;
 import org.omscs.ml.a4burlap.mdp.MDPGridWorld;
 import org.omscs.ml.a4burlap.utils.CSVWriterGeneric;
 import org.omscs.ml.a4burlap.utils.EpisodeWrapper;
+import org.omscs.ml.a4burlap.utils.RunResultsCsvWriterCallback;
 import org.omscs.ml.a4burlap.vipi.DeltaCapable;
 import org.omscs.ml.a4burlap.vipi.DeltaVariantPolicyIteration;
 import org.omscs.ml.a4burlap.vipi.PISettings;
@@ -26,23 +27,27 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.omscs.ml.a4burlap.utils.EpisodeWrapper.writeVIPIEpisodeData;
+import static org.omscs.ml.a4burlap.utils.EpisodeWrapper.writeEpisodeToCSV;
 
 public class GridWorldPIExperiment implements RunnerVIPI {
 
   private PISettings piSettings;
   private CSVWriterGeneric csvWriter;
   private MDPGridWorld mdpGridWorld;
+  private RunResultsCsvWriterCallback resultsCsvCallback;
 
   private int episodeCount = 0;
 
   public GridWorldPIExperiment(
-          MDPGridWorld mdpGridWorld, PISettings piSettings, CSVWriterGeneric csvWriter) {
+      MDPGridWorld mdpGridWorld, PISettings piSettings, CSVWriterGeneric csvWriter) {
     this.piSettings = piSettings;
     this.csvWriter = csvWriter;
     this.mdpGridWorld = mdpGridWorld;
   }
+
   @Override
-  public void runAndSaveMulti( int episodes) {
+  public void runAndSaveMulti(int episodes) {
+    initResultCallbackCount();
     for (int i = 0; i < episodes; i++) {
       runAndSave(false);
       incrementEpisode();
@@ -52,6 +57,7 @@ public class GridWorldPIExperiment implements RunnerVIPI {
   @Override
   public void runAndSaveMultiWithVisual(int episodes, int episodeToVisualize) {
     boolean shouldVisualize = false;
+    initResultCallbackCount();
     for (int i = 0; i < episodes; i++) {
       shouldVisualize = (episodeToVisualize == i || episodeToVisualize == -1);
       runAndSave(shouldVisualize);
@@ -79,7 +85,7 @@ public class GridWorldPIExperiment implements RunnerVIPI {
     Policy policy = null;
     Episode episode = null;
 
-    System.out.printf("Starting PI for GridWorld Episode: **%d**\n",this.episodeCount);
+    System.out.printf("Starting PI for GridWorld Episode: **%d**\n", this.episodeCount);
     policy = piPlanner.planFromState(initialGWState);
 
     episode =
@@ -88,7 +94,6 @@ public class GridWorldPIExperiment implements RunnerVIPI {
     List<Action> actionSeq = episode.actionSequence;
     System.out.println(actionSeq);
 
-
     // writing of the metrics to file
     List<PIVIDeltaMetric> metrics = ((DeltaCapable) piPlanner).getDeltaMetrics();
     System.out.printf("Writing %d results to csv now for GridWorldPI experiment", metrics.size());
@@ -96,7 +101,7 @@ public class GridWorldPIExperiment implements RunnerVIPI {
         String.format("%s-%02d", this.piSettings.getShortName(), this.episodeCount);
 
     csvWriter.writeHeader(
-        Arrays.asList(new String[] {"iter", "delta", "wallclock", "evals"}),
+        Arrays.asList("iter", "delta", "wallclock", "evals"),
         NAME_GRIDWORLD,
         usableFileName);
     long totalWallClock = 0, wallClock = 0, valueIterations = 0;
@@ -107,12 +112,10 @@ public class GridWorldPIExperiment implements RunnerVIPI {
       totalWallClock += wallClock;
       csvWriter.writeRow(
           Arrays.asList(
-              new String[] {
-                Integer.toString(i),
-                Double.toString(metric.getDelta()),
-                Long.toString(wallClock),
-                Long.toString(valueIterations)
-              }));
+                  Integer.toString(i),
+                  Double.toString(metric.getDelta()),
+                  Long.toString(wallClock),
+                  Long.toString(valueIterations)));
     }
 
     EpisodeWrapper eWrapper =
@@ -123,8 +126,13 @@ public class GridWorldPIExperiment implements RunnerVIPI {
     Path episodePath = Path.of(baseResutlPath, NAME_GRIDWORLD, usableFileName);
     writeVIPIEpisodeData(eWrapper, episodePath.toString());
 
+    if (this.resultsCsvCallback != null) {
+      writeEpisodeToCSV(eWrapper, csvWriter, this.resultsCsvCallback);
+    }
+
     System.out.printf(
-            "Optimal Policy \n- total steps %d\n- total reward %.5f\n", episode.actionSequence.size(), eWrapper.totalReward);
+        "Optimal Policy \n- total steps %d\n- total reward %.5f\n",
+        episode.actionSequence.size(), eWrapper.totalReward);
 
     if (visualize) {
       runWithGui((ValueFunction) piPlanner, initialGWState, gwDomain, policy, hashingFactory);
@@ -141,7 +149,11 @@ public class GridWorldPIExperiment implements RunnerVIPI {
     List<State> states = StateReachability.getReachableStates(initialState, domain, hashingFactory);
     ValueFunctionVisualizerGUI gui =
         GridWorldDomain.getGridWorldValueFunctionVisualization(
-            states, this.mdpGridWorld.getWidth(), this.mdpGridWorld.getHeight(), valueFunction, policy);
+            states,
+            this.mdpGridWorld.getWidth(),
+            this.mdpGridWorld.getHeight(),
+            valueFunction,
+            policy);
 
     gui.setTitle(this.piSettings.getShortName());
     gui.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -155,5 +167,19 @@ public class GridWorldPIExperiment implements RunnerVIPI {
   @Override
   public void incrementEpisode() {
     this.episodeCount++;
+    if (this.resultsCsvCallback != null) {
+      this.resultsCsvCallback.setTrialIndex(this.episodeCount);
+    }
+  }
+
+  @Override
+  public void setRunResultsCSVCallback(RunResultsCsvWriterCallback runResultsCallback) {
+    this.resultsCsvCallback = runResultsCallback;
+  }
+
+  private void initResultCallbackCount() {
+    if (this.resultsCsvCallback != null) {
+      this.resultsCsvCallback.setTrialIndex(0);
+    }
   }
 }

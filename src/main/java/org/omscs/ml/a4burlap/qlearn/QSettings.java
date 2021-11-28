@@ -16,6 +16,9 @@ public class QSettings implements ExperimentSettingsTracking {
 
     String shortName;
 
+
+    double targeConvergeReward = -1;
+
     public QSettings(String shortName, double gamma, double qInit, double learningRate, int maxEpisodeSize, double epsilon, double epsilonDecay) {
         this.shortName = shortName;
         this.gamma = gamma;
@@ -56,7 +59,15 @@ public class QSettings implements ExperimentSettingsTracking {
 
     @Override
     public String experimentSettingsToLog() {
-        return String.format("Name: **%s** gamma:%.3f, qInit:%.5f, learning_rate:%.5f, maxEpisodeSize:%d, epsilon:%.5f, eDecay:%.5f",
-                this.shortName, this.gamma, this.qInit, this.learningRate, this.maxEpisodeSize, this.epsilon, this.epsilonDecay);
+        return String.format("Name: **%s** gamma:%.3f, qInit:%.5f, learning_rate:%.5f, maxEpisodeSize:%d, epsilon:%.5f, eDecay:%.5f, targetReward:%.5f",
+                this.shortName, this.gamma, this.qInit, this.learningRate, this.maxEpisodeSize, this.epsilon, this.epsilonDecay, this.targeConvergeReward);
+    }
+
+    public void setTargeConvergeReward(double targeConvergeReward) {
+        this.targeConvergeReward = targeConvergeReward;
+    }
+
+    public double getTargeConvergeReward() {
+        return targeConvergeReward;
     }
 }

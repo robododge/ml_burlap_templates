@@ -3,7 +3,6 @@ package org.omscs.ml.a4burlap.experiments;
 import burlap.behavior.policy.Policy;
 import burlap.behavior.policy.PolicyUtils;
 import burlap.behavior.singleagent.Episode;
-import burlap.behavior.singleagent.planning.Planner;
 import burlap.behavior.singleagent.planning.stochastic.policyiteration.PolicyIteration;
 import burlap.mdp.core.action.Action;
 import burlap.mdp.core.state.State;
@@ -12,6 +11,7 @@ import burlap.statehashing.HashableStateFactory;
 import org.omscs.ml.a4burlap.mdp.MDPBlockDude;
 import org.omscs.ml.a4burlap.utils.CSVWriterGeneric;
 import org.omscs.ml.a4burlap.utils.EpisodeWrapper;
+import org.omscs.ml.a4burlap.utils.RunResultsCsvWriterCallback;
 import org.omscs.ml.a4burlap.vipi.DeltaCapable;
 import org.omscs.ml.a4burlap.vipi.DeltaVariantPolicyIteration;
 import org.omscs.ml.a4burlap.vipi.PISettings;
@@ -22,11 +22,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.omscs.ml.a4burlap.utils.EpisodeWrapper.writeVIPIEpisodeData;
+import static org.omscs.ml.a4burlap.utils.EpisodeWrapper.writeEpisodeToCSV;
 
 public class BlockDudePIExperiment implements RunnerVIPI {
   private MDPBlockDude mdpBlockDude;
   private PISettings piSettings;
   private CSVWriterGeneric csvWriter;
+  private RunResultsCsvWriterCallback resultsCsvCallback;
 
   private int episodeCount = 0;
 
@@ -57,7 +59,7 @@ public class BlockDudePIExperiment implements RunnerVIPI {
     HashableStateFactory hashingFactory = mdpBlockDude.getHashableStateFactory();
     State initialBdState = mdpBlockDude.getInitialState();
 
-    Planner piPlanner =
+    PolicyIteration piPlanner =
         new DeltaVariantPolicyIteration(
             bdDomain,
             this.piSettings.getGamma(),
@@ -86,7 +88,7 @@ public class BlockDudePIExperiment implements RunnerVIPI {
         String.format("%s-%02d", this.piSettings.getShortName(), this.episodeCount);
 
     csvWriter.writeHeader(
-        Arrays.asList(new String[] {"iter", "delta", "wallclock", "evals"}), NAME_BLOCKDUDE, usableFileName);
+        Arrays.asList("iter", "delta", "wallclock", "evals"), NAME_BLOCKDUDE, usableFileName);
     long totalWallClock = 0, wallClock = 0, valueIterations = 0;
     for (int i = 0; i < metrics.size(); i++) {
       PIVIDeltaMetric metric = metrics.get(i);
@@ -95,16 +97,18 @@ public class BlockDudePIExperiment implements RunnerVIPI {
       totalWallClock += wallClock;
       csvWriter.writeRow(
           Arrays.asList(
-              new String[] {
-                Integer.toString(i), Double.toString(metric.getDelta()), Long.toString(wallClock), Long.toString(valueIterations)
-              }));
+                  Integer.toString(i), Double.toString(metric.getDelta()), Long.toString(wallClock), Long.toString(valueIterations)), usableFileName);
     }
 
-    EpisodeWrapper eWrapper = new EpisodeWrapper(episode, totalWallClock, ((PolicyIteration)piPlanner).getTotalValueIterations() );
+    EpisodeWrapper eWrapper = new EpisodeWrapper(episode, totalWallClock, piPlanner.getTotalValueIterations() );
     String baseResutlPath = csvWriter.getFullBasePath().toString();
 
     Path episodePath = Path.of(baseResutlPath, NAME_BLOCKDUDE, usableFileName);
     writeVIPIEpisodeData(eWrapper, episodePath.toString());
+
+    if (this.resultsCsvCallback != null) {
+      writeEpisodeToCSV(eWrapper, csvWriter, this.resultsCsvCallback);
+    }
   }
 
   private int getMaxRolloutIterations() {
@@ -115,5 +119,10 @@ public class BlockDudePIExperiment implements RunnerVIPI {
   @Override
   public void incrementEpisode() {
     this.episodeCount++;
+  }
+
+  @Override
+  public void setRunResultsCSVCallback(RunResultsCsvWriterCallback runResultsCallback) {
+    this.resultsCsvCallback = runResultsCallback;
   }
 }

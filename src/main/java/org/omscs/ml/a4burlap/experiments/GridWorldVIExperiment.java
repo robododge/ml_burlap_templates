@@ -15,6 +15,7 @@ import burlap.statehashing.HashableStateFactory;
 import org.omscs.ml.a4burlap.mdp.MDPGridWorld;
 import org.omscs.ml.a4burlap.utils.CSVWriterGeneric;
 import org.omscs.ml.a4burlap.utils.EpisodeWrapper;
+import org.omscs.ml.a4burlap.utils.RunResultsCsvWriterCallback;
 import org.omscs.ml.a4burlap.vipi.DeltaCapable;
 import org.omscs.ml.a4burlap.vipi.DeltaVariantValueIteration;
 import org.omscs.ml.a4burlap.vipi.PIVIDeltaMetric;
@@ -25,12 +26,14 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.omscs.ml.a4burlap.utils.EpisodeWrapper.writeVIPIEpisodeData;
+import static org.omscs.ml.a4burlap.utils.EpisodeWrapper.writeEpisodeToCSV;
 
 public class GridWorldVIExperiment implements RunnerVIPI {
 
   private VISettings viSettings;
   private CSVWriterGeneric csvWriter;
   private MDPGridWorld mdpGridWorld;
+  private RunResultsCsvWriterCallback resultsCsvCallback;
 
   private int episodeCount = 0;
 
@@ -43,6 +46,7 @@ public class GridWorldVIExperiment implements RunnerVIPI {
 
   @Override
   public void runAndSaveMulti( int episodes) {
+    initResultCallbackCount();
     for (int i = 0; i < episodes; i++) {
       runAndSave(false);
       incrementEpisode();
@@ -52,6 +56,7 @@ public class GridWorldVIExperiment implements RunnerVIPI {
   @Override
   public void runAndSaveMultiWithVisual(int episodes, int episodeToVisualize) {
     boolean shouldVisualize = false;
+    initResultCallbackCount();
     for (int i = 0; i < episodes; i++) {
       shouldVisualize = (episodeToVisualize == i || episodeToVisualize == -1);
       runAndSave(shouldVisualize);
@@ -112,6 +117,11 @@ public class GridWorldVIExperiment implements RunnerVIPI {
 
     Path episodePath = Path.of(baseResutlPath, NAME_GRIDWORLD, usableFileName);
     writeVIPIEpisodeData(eWrapper, episodePath.toString());
+
+    if (this.resultsCsvCallback != null) {
+      writeEpisodeToCSV(eWrapper, csvWriter, this.resultsCsvCallback);
+    }
+
     System.out.printf(
             "Optimal Policy \n- total steps %d\n- total reward %.5f\n", episode.actionSequence.size(), eWrapper.totalReward);
 
@@ -144,5 +154,20 @@ public class GridWorldVIExperiment implements RunnerVIPI {
   @Override
   public void incrementEpisode() {
     this.episodeCount++;
+    if (this.resultsCsvCallback != null) {
+      this.resultsCsvCallback.setTrialIndex(this.episodeCount);
+    }
+  }
+
+  @Override
+  public void setRunResultsCSVCallback(RunResultsCsvWriterCallback runResultsCallback) {
+    this.resultsCsvCallback = runResultsCallback;
+
+  }
+
+  private void initResultCallbackCount() {
+    if (this.resultsCsvCallback != null) {
+      this.resultsCsvCallback.setTrialIndex(0);
+    }
   }
 }

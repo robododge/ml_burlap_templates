@@ -85,6 +85,10 @@ public class CSVWriterGeneric {
         return Path.of(this.fullBasePath.toString(), intermediatePath, fileString);
     }
 
+    public String makeCsvPathString(String intermediatePath, String fileString){
+        return makeCsvPath(intermediatePath,fileString).toString();
+    }
+
     public void writeHeader(Iterable<String> values, String itermediatePath, String fileName) {
         Path csvPath = makeCsvPath(itermediatePath, fileName);
         this.currentInterPath = itermediatePath;
@@ -99,6 +103,10 @@ public class CSVWriterGeneric {
 
     public void writeRow(Iterable<String> values) {
         Path csvPath = makeCsvPath(this.currentInterPath, this.currentFilePath);
+        writeRow(values, csvPath);
+    }
+    public void writeRow(Iterable<String> values, String currentFilePath) {
+        Path csvPath = makeCsvPath(this.currentInterPath, currentFilePath);
         writeRow(values, csvPath);
     }
 
